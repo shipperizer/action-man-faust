@@ -1,0 +1,30 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "<6,>=5"
+pytest-cov = "<3,>=2"
+pytest-asyncio = "<1,>=0.10"
+pytest-flake8 = "*"
+flake8 = "*"
+mypy = "*"
+
+[packages]
+ipython = "*"
+ipdb = "*"
+autopep8 = "<2,>=1"
+alembic = "<2,>=1"
+sqlalchemy = "<2,>=1"
+psycopg2-binary = "<3,>=2.7"
+faust = {extras = ["statsd", "debug", "uvloop", "fast"],version = "<2,>=1"}
+statsd = "<4,>=3"
+kafka-python = "<2,>=1"
+asyncpg = "<1,>=0.20"
+aiomonitor = "*"
+sanic = "<20,>=19"
+gunicorn = "<21,>=20"
+
+[requires]
+python_version = "3.8"

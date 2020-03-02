@@ -1,0 +1,13 @@
+.git
+**/*.pyc
+**/__pycache__
+/infrastructure
+GIT_COMMIT
+.coverage
+.coveragerc
+.gitignore
+README.md
+coverage.xml
+results.xml
+docker-compose.yml
+.dockerignore

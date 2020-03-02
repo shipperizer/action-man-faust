@@ -1,0 +1,89 @@
+version: '3'
+
+services:
+  worker:
+    image: action-man-faust
+    command: make kafka
+    build:
+      dockerfile: Dockerfile
+      context: .
+    environment:
+      - DB_CNX_STRING=postgresql://postgres:postgres@postgres:5432/actions
+      - KAFKA_CNX_STRING=kafka-1:9092,kafka-2:9092,kafka-3:9092
+      - STORE_CNX_STRING=memory://
+      - STATSD_PREFIX=action_man.faust
+      - PYTHONPATH=/var/app
+      - REDIS_CNX_STRING=redis://redis:6379/0
+    volumes:
+      - ./:/var/app
+    depends_on:
+      - postgres
+      - kafka
+      - redis
+    ports:
+      - 6066
+      - 8000
+      - 50101
+
+  web:
+    image: action-man-faust
+    command: make web
+    build:
+      dockerfile: Dockerfile
+      context: .
+    environment:
+      - DB_CNX_STRING=postgresql://postgres:postgres@postgres:5432/actions
+      - KAFKA_CNX_STRING=kafka-1:9092,kafka-2:9092,kafka-3:9092
+      - STORE_CNX_STRING=memory://
+      - STATSD_PREFIX=action_man.faust
+      - PYTHONPATH=/var/app
+      - REDIS_CNX_STRING=redis://redis:6379/0
+    volumes:
+      - ./:/var/app
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    ports:
+      - 6066
+      - 58000:8000
+      - 50101
+
+  postgres:
+    image: postgres:11
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=actions
+    ports:
+      - 5432
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - 2181
+
+  kafka:
+    image: wurstmeister/kafka
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_HOST_NAME=kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - 9092
+      - 2181
+    volumes:
+      - ./:/var/app
+    networks:
+        default:
+            aliases:
+                - kafka
+                - kafka-1
+                - kafka-2
+                - kafka-3
+
+  redis:
+    image: redis:5-alpine
+    ports:
+      - 6379
