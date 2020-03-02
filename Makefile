@@ -1,7 +1,7 @@
 .PHONY: test kafka migrate
 
 DEBUG?=--debug
-LOG_LEVEL?=DEBUG
+LOG_LEVEL?=INFO
 RUN=pipenv run
 
 test:
@@ -15,9 +15,6 @@ migrate:
 
 kafka: migrate
 	$(RUN) faust -A action_man.entrypoint.kafka -l $(LOG_LEVEL) $(DEBUG) worker
-
-demo: migrate
-	$(RUN) faust -A action_man.demo:kapp -l INFO $(DEBUG) worker
 
 webdev: migrate
 	$(RUN) python action_man/entrypoint.py

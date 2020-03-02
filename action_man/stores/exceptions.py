@@ -1,0 +1,3 @@
+class StoreException(Exception):
+    """ """
+    pass
