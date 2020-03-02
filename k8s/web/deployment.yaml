@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: action_man.web
+  name: action-man-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: action_man.web
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 90%
+  template:
+    metadata:
+      labels:
+        app: action_man.web
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - image: action_man
+          name: action-man-web
+          resources:
+            limits:
+              cpu: 2
+              memory: 1024Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          args:
+            - make
+            - web
+          imagePullPolicy: Never # change to Always for real env
+          ports:
+            - name: http
+              containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /api/actions # create ping/status endpoint
+              port: http
+            initialDelaySeconds: 10
+            failureThreshold: 30
+            periodSeconds: 10
+          env:
+            - name: STATSD_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: STATSD_PORT
+              value: "8125"
+          envFrom:
+            - configMapRef:
+                name: action-man-web-env
+            - secretRef:
+                name: action-man-web-secret

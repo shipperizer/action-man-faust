@@ -1,0 +1,6 @@
+image:
+  repository: postgres
+  tag: 11
+postgresqlDataDir: /data/pgdata
+persistence:
+  mountPath: /data/

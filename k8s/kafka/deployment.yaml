@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: action_man.faust
+  name: action-man-kafka
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: action_man.faust
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 50%
+  template:
+    metadata:
+      labels:
+        app: action_man.faust
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - image: action_man
+          name: action-man-faust
+          resources:
+            limits:
+              cpu: 2
+              memory: 1024Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          args:
+            - make
+            - kafka
+          imagePullPolicy: Never # change to Always for real env
+          ports:
+            - name: liveness-port
+              containerPort: 6066
+          readinessProbe:
+            httpGet:
+              path: /
+              port: liveness-port
+            initialDelaySeconds: 30
+            failureThreshold: 30
+            periodSeconds: 10
+          env:
+            - name: STATSD_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: STATSD_PORT
+              value: "8125"
+          envFrom:
+            - configMapRef:
+                name: action-man-kafka-env
+            - secretRef:
+                name: action-man-kafka-secret

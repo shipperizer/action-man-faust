@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: actions-db-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: actions-db
+        image: postgres:11
+        command: ["createdb"]
+        args:
+          - actions
+        env:
+          - name: PGHOST
+            value: postgres-postgresql.default.svc.cluster.local
+          - name: PGUSER
+            value: postgres
+        envFrom:
+          - secretRef:
+              name: action-man-kafka-secret
+
+      restartPolicy: Never

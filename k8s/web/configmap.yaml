@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: action_man.web
+  name: action-man-web-env
+data:
+  ENVIRONMENT: dev
+  PYTHONPATH: /var/app
+  STORE_CNX_STRING: memory://
+  STATSD_PREFIX: action_man.web
+  KAFKA_CNX_STRING: kafka.default.svc.cluster.local:9092

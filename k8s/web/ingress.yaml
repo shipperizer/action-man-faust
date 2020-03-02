@@ -1,0 +1,13 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: action-man-web
+spec:
+  rules:
+    - host: action-man.docker.local
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: action-man-web
+            servicePort: http
