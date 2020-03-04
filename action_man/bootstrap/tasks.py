@@ -1,6 +1,7 @@
 import logging
 
 from action_man.entrypoint import kafka
+from action_man import cache
 from action_man import db
 
 logger = logging.getLogger(__name__)
@@ -44,3 +45,12 @@ async def setup_db_pool():
     logger.warning('kafka.db_pool initialization...')
     kafka.db_pool = await db.db_pool()
     logger.warning('kafka.db_pool initialized')
+
+@kafka.task
+async def setup_cache_pool():
+    """
+    Setup DB pool
+    """
+    logger.warning('kafka.cache_pool initialization...')
+    kafka.cache_pool = await cache.cache_pool()
+    logger.warning('kafka.cache_pool initialized')

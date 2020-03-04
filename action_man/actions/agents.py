@@ -19,9 +19,17 @@ async def store_actions(actions):
     """
     async for action in actions:
         logger.info(f'Storing action on db')
+        await cache_actions.cast(action)
         async with kafka.db_pool.acquire() as conn:
                 try:
                     await save_action(conn, action.to_representation())
                 except StoreException:
                     logger.exception(f'Error while inserting action in DB, continuing....')
                     continue
+
+
+@kafka.agent
+async def cache_actions(actions):
+    async for action in actions:
+        logger.info(f'Increasing action count on cache')
+        await kafka.cache_pool.incr('action_count')
