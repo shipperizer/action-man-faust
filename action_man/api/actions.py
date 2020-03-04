@@ -13,13 +13,15 @@ actions_bp = Blueprint('actions', url_prefix='/api/actions')
 async def get_action(request: Request) -> HTTPResponse:
     async with request.app.db_pool.acquire() as conn:
         actions = await get_actions(conn, limit=500)
+        count = await request.app.cache_pool.get('action_count')
 
-        # intorduce Marshmallow for JSON schemas
+        # introduce Marshmallow for JSON schemas
         data = [
             {
                 'id': str(action['id']),
-                'session_id': str(action['session_id']),
-                'reward': action['reward'],
+                'experiment_id': str(action['experiment_id']),
+                'variant_id': str(action['variant_id']),
+                'reward': int(action['reward']),
                 'context': action['context']
             }
             for action in actions
@@ -27,7 +29,8 @@ async def get_action(request: Request) -> HTTPResponse:
 
         return json(
             {
-                'data': data
+                'data': data,
+                'count': count
             }
         )
 
