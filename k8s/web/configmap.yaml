@@ -10,3 +10,4 @@ data:
   STORE_CNX_STRING: memory://
   STATSD_PREFIX: action_man.web
   KAFKA_CNX_STRING: kafka.default.svc.cluster.local:9092
+  REDIS_CNX_STRING: redis://redis-ha.default.svc.cluster.local:6379/0

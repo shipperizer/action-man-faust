@@ -1,0 +1,4 @@
+replicas: 1
+redis:
+  config:
+    min-replicas-to-write: 0

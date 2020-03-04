@@ -25,6 +25,8 @@ asyncpg = "<1,>=0.20"
 aiomonitor = "*"
 sanic = "<20,>=19"
 gunicorn = "<21,>=20"
+aioredis = "<2,>=1"
+
 
 [requires]
 python_version = "3.8"

@@ -10,7 +10,7 @@ setup:
 	$(HELM) repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
 
 kafka: setup
-	$(HELM) upgrade -i kafka incubator/kafka
+	$(HELM) upgrade -i kafka -f kafka.yaml incubator/kafka
 
 postgres: setup
 	$(HELM) upgrade -i postgres -f postgres.yaml stable/postgresql
@@ -18,7 +18,10 @@ postgres: setup
 postgres-pwd:
 	@echo POSTGRES_PASSWORD=$(shell kubectl get secret --namespace default postgres-postgresql -o jsonpath="{.data.postgresql-password}" | base64 --decode)
 
-metrics-server:
+redis: setup
+	$(HELM) upgrade -i redis-ha -f redis.yaml stable/redis-ha
+
+metrics-server: setup
 	$(HELM) upgrade -i metrics-server -f metrics-server.yaml stable/metrics-server
 
 nginx:
@@ -27,4 +30,4 @@ nginx:
 	$(KUBECTL) apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/provider/cloud-generic.yaml
 
 toolbox:
-	$(KUBECTL) run -i --tty toolbox --image=gcr.io/google-containers/toolbox -- sh
+	$(KUBECTL) run --generator=run-pod/v1 -i --tty toolbox --image=gcr.io/google-containers/toolbox -- sh
