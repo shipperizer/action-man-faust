@@ -2,6 +2,9 @@ apiVersion: skaffold/v2alpha4
 kind: Config
 build:
   artifacts:
+  # - image: pipenv_deps
+  #   custom:
+  #     buildCommand: tools/update_deps.sh
   - image: action_man
 deploy:
   kubectl:
