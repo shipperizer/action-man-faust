@@ -1,5 +1,7 @@
 import logging
 
+from aioredlock import Aioredlock, LockError
+
 from action_man.entrypoint import kafka
 from action_man import cache
 from action_man import db
@@ -27,6 +29,7 @@ async def create_unconsumed_topics():
 
     # ################################################ #
 
+
 @kafka.timer(60.0)
 async def refresh_topics_map():
     """
@@ -38,19 +41,11 @@ async def refresh_topics_map():
 
 
 @kafka.task
-async def setup_db_pool():
+async def setnx_actions_count():
     """
-    Setup DB pool
+    SETNX actions_count key in redis
     """
-    logger.warning('kafka.db_pool initialization...')
-    kafka.db_pool = await db.db_pool()
-    logger.warning('kafka.db_pool initialized')
+    cache_pool = await kafka.cache_pool()
+    redis_lock_manager = await kafka.redis_lock_manager()
 
-@kafka.task
-async def setup_cache_pool():
-    """
-    Setup DB pool
-    """
-    logger.warning('kafka.cache_pool initialization...')
-    kafka.cache_pool = await cache.cache_pool()
-    logger.warning('kafka.cache_pool initialized')
+    await cache.set_key_with_lock('action_count', 0, redis_lock_manager, cache_pool, execute_cmd='setnx')
