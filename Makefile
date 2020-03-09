@@ -1,11 +1,11 @@
-.PHONY: test kafka migrate
+.PHONY: test kafka migrate web aweb
 
 DEBUG?=--debug
 LOG_LEVEL?=INFO
 RUN=pipenv run
 
 test:
-	$(RUN) pytest -v --cov action_man --cov-report term --cov-config .coveragerc test
+	$(RUN) pytest -v --cov action_man --cov-report term --cov-config .coveragerc --disable-warnings t
 
 mypy:
 	$(RUN) mypy action_man/
@@ -20,4 +20,4 @@ webdev: migrate
 	$(RUN) python action_man/entrypoint.py
 
 web: migrate
-	$(RUN) gunicorn action_man.entrypoint:web --bind 0.0.0.0:8000 --worker-class sanic.worker.GunicornWorker
+	$(RUN) uvicorn action_man.entrypoint:web --host 0.0.0.0 --port 8000

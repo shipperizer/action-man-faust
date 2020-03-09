@@ -4,12 +4,14 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+factory_boy = "<3,>=2.9.2"
+flake8 = "*"
+mypy = "*"
 pytest = "<6,>=5"
 pytest-cov = "<3,>=2"
 pytest-asyncio = "<1,>=0.10"
 pytest-flake8 = "*"
-flake8 = "*"
-mypy = "*"
+pytz = "*"
 
 [packages]
 ipython = "*"
@@ -25,6 +27,7 @@ asyncpg = "<1,>=0.20"
 aiomonitor = "*"
 sanic = "<20,>=19"
 gunicorn = "<21,>=20"
+uvicorn = "<1,>=0.11"
 aioredis = "<2,>=1"
 aioredlock = "<1,>=0.3"
 numpy = "*"
