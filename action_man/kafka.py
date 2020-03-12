@@ -125,7 +125,9 @@ def init_kafka() -> KafkaWorker:
         'action_man',
         service_name='action_man',
         broker=environ.get('KAFKA_CNX_STRING', 'kafka:9092'),
-        autodiscover=['action_man.actions', 'action_man.bootstrap'],
+        autodiscover=[
+            'action_man.actions', 'action_man.bootstrap', 'action_man.experiments', 'action_man.probabilities'
+        ],
         origin='action_man',
         store=environ.get('STORE_CNX_STRING', 'memory://'),
         topic_partitions=10,

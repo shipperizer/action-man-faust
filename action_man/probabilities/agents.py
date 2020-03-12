@@ -21,46 +21,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-@kafka.agent(actions_topic)
-async def store_actions(actions: StreamT):
-    """
-    Stores actions on DB for posterous analysis.
-    Processed in batches of up to 1000
-
-    :param actions:
-
-    """
-    async for action in actions:
-        logger.info(f'Storing action on db')
-        db_pool = await current_agent().app.db_pool()
-        async with db_pool.acquire() as conn:
-            try:
-                yield await save_action(conn, action.to_representation())
-            except StoreException:
-                logger.exception(f'Error while inserting action in DB, continuing....')
-            finally:
-                yield action.id
-
-
-@kafka.agent(actions_topic)
-async def cache_actions(actions: StreamT):
-    """
-
-    :param actions:
-
-    """
-    async for action in actions:
-        logger.info(f'Increasing action count on cache')
-        cache_pool = await current_agent().app.cache_pool()
-        with await cache_pool as conn:
-            await conn.incr('action_count')
-            if action.reward == 1:
-                await conn.incr(f'{action.experiment_id}_{action.variant_id}_successes')
-            await conn.incr(f'{action.experiment_id}_{action.variant_id}_total')
-
-        yield action.id
-
-
 @kafka.agent()
 async def calculate_probabilities(stream: StreamT):
     """
