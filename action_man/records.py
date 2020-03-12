@@ -2,7 +2,7 @@ from faust import Record
 
 
 class Action(Record):
-    """ """
+    ''' '''
     id: str
     experiment_id: str
     variant_id: str
@@ -11,6 +11,6 @@ class Action(Record):
 
 
 class ExperimentInit(Record):
-    """ """
+    ''' '''
     experiment_id: str
     variant_id: str

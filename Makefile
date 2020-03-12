@@ -7,8 +7,11 @@ RUN=pipenv run
 test:
 	$(RUN) pytest -v --cov action_man --cov-report term --cov-config .coveragerc --disable-warnings t
 
+lint:
+	$(RUN) flake8 action_man/
+
 mypy:
-	$(RUN) mypy action_man/
+	$(RUN) mypy --namespace-packages -p action_man
 
 migrate:
 	$(RUN) alembic upgrade head

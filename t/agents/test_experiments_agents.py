@@ -7,6 +7,7 @@ from random import randint
 import pytest
 
 from action_man.experiments.agents import init_experiment, calculate_experiments
+from action_man.probabilities.agents import calculate_probabilities
 from action_man import models
 from action_man import records
 
@@ -41,19 +42,12 @@ async def test_init_experiment(faust, cache_pool, cache_lock_manager):
 
 @pytest.mark.xfail(reason='RuntimeError: Task <> got Future <Future pending> attached to a different loop')
 @pytest.mark.asyncio
-async def test_calculate_experiments_with_no_experiments_available(db_conn):
+async def test_calculate_experiments_with_no_experiments_available(faust, db_conn):
     # arrange
     assert await db_conn.fetch(f'SELECT * FROM {models.Action.__tablename__}')
 
-    def mock_coro(return_value=None, **kwargs):
-        """Create mock coroutine function."""
-        async def wrapped(*args, **kwargs):
-            return return_value
-        return MagicMock(wraps=wrapped, **kwargs)
-
     # act
-    with patch('action_man.experiments.agents.calculate_probabilities') as mock_calculate_prob:
-        mock_calculate_prob.cast = mock_coro()
+    with patch.object(calculate_probabilities, 'cast', new_callable=AsyncMock()) as mock_cast:
         await calculate_experiments()
 
     # assert

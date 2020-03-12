@@ -12,7 +12,7 @@ async def cache_pool() -> aioredis.ConnectionsPool:
 
 
 def lock_manager() -> Aioredlock:
-    """ """
+    ''' '''
     return Aioredlock(
         [
             environ.get('REDIS_CNX_STRING', 'redis://redis:redis@redis:6739/0')
@@ -25,7 +25,7 @@ async def set_key_with_lock(
     value: str,
     lock_manager: Aioredlock,
     pool: aioredis.ConnectionsPool,
-    execute_cmd: str='set'
+    execute_cmd: str = 'set'
 ) -> None:
     """
 
@@ -36,7 +36,7 @@ async def set_key_with_lock(
     :param command:
     """
     try:
-        async with await lock_manager.lock(f'lock_{key}') as lock:
+        async with await lock_manager.lock(f'lock_{key}'):
             with await pool as conn:
                 command = getattr(conn, execute_cmd)
                 await command(key, value)

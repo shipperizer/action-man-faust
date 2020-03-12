@@ -15,6 +15,7 @@ pytz = "*"
 
 [packages]
 ipython = "*"
+asyncio-ipython-magic = "*"
 ipdb = "*"
 autopep8 = "<2,>=1"
 alembic = "<2,>=1"
@@ -22,7 +23,7 @@ sqlalchemy = "<2,>=1"
 psycopg2-binary = "<3,>=2.7"
 faust = {extras = ["statsd", "debug", "uvloop", "fast"],version = "<2,>=1"}
 statsd = "<4,>=3"
-kafka-python = "<2,>=1"
+kafka-python = "<3,>=1"
 asyncpg = "<1,>=0.20"
 aiomonitor = "*"
 sanic = "<20,>=19"

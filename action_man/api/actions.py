@@ -1,5 +1,3 @@
-from json import dumps
-
 from sanic import Blueprint
 from sanic.request import Request
 from sanic.response import json, HTTPResponse

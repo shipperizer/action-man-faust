@@ -1,20 +1,13 @@
-from datetime import timedelta
 import logging
 import json
 
-from aioredlock import LockError
 from faust.agents import current_agent
 from faust.types import StreamT
-import numpy
 
 from action_man.algorithm import ab
 from action_man.entrypoint import kafka
-from action_man.stores.actions import save_action
-from action_man.stores.exceptions import StoreException
 from action_man import cache
 from action_man import models
-from action_man import records
-from action_man.topics import actions_topic
 
 
 logger = logging.getLogger(__name__)
@@ -24,8 +17,9 @@ logger.setLevel(logging.INFO)
 @kafka.agent()
 async def calculate_probabilities(stream: StreamT):
     """
+    Calculate probabilities
 
-    :param stream:
+    :param stream: StreamT:
 
     """
     async for experiment_id in stream:
@@ -34,6 +28,7 @@ async def calculate_probabilities(stream: StreamT):
         db_pool = await current_agent().app.db_pool()
         cache_pool = await current_agent().app.cache_pool()
         redis_lock_manager = await current_agent().app.redis_lock_manager()
+        kafka_producer =current_agent().app.kafka_producer()
 
         async with db_pool.acquire() as conn:
             async with conn.transaction():
@@ -57,6 +52,6 @@ async def calculate_probabilities(stream: StreamT):
 
         await cache.set_key_with_lock(f'{experiment_id}_probabilities', calculation, redis_lock_manager, cache_pool)
 
-        current_agent().app.kafka_producer.send('recommendation.probability', value=calculation)
+        kafka_producer.send('recommendation.probability', value=calculation)
 
         yield f'{experiment_id}_probabilities'

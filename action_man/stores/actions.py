@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List
+from typing import Dict, Any
 import logging
 
 import asyncpg
@@ -9,7 +9,7 @@ from action_man.stores.exceptions import StoreException
 from action_man.models import Action
 
 
-async def get_actions(conn: Connection, id: str=None, experiment_id: str=None, limit: int=500) -> List[Record]:
+async def get_actions(conn: Connection, id: str = None, experiment_id: str = None, limit: int = 500) -> Any:
     """
 
     :param conn: Connection:
@@ -18,18 +18,18 @@ async def get_actions(conn: Connection, id: str=None, experiment_id: str=None, l
     :param limit: int:  (Default value = 500)
 
     """
-    query = [f'SELECT * FROM {Action.__tablename__}']
+    _q = [f'SELECT * FROM {Action.__tablename__}']
 
     if id:
-        query.append(f'WHERE id = $1')
+        _q.append(f'WHERE id = $1')
 
     if experiment_id:
-        query.append(f'WHERE experiment_id = $1' if not id else f'AND WHERE experiment_id = $2')
+        _q.append(f'WHERE experiment_id = $1' if not id else f'AND WHERE experiment_id = $2')
 
     if limit > 0:
-        query.append(f'LIMIT {limit}')
+        _q.append(f'LIMIT {limit}')
 
-    query = ' '.join(query)
+    query = ' '.join(_q)
 
     q_args = [arg for arg in [id, experiment_id] if arg]
 
@@ -41,7 +41,7 @@ async def get_actions(conn: Connection, id: str=None, experiment_id: str=None, l
             raise StoreException from exc
 
 
-async def save_action(conn: Connection, action: Dict) -> str:
+async def save_action(conn: Connection, action: Dict) -> Any:
     """
 
     :param conn: Connection:

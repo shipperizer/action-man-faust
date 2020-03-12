@@ -1,8 +1,3 @@
-import base64
-import collections
-import logging
-from os import environ
-import json
 from typing import Any
 
 from faust.sensors.monitor import Monitor
@@ -11,7 +6,7 @@ from faust.types import StreamT, TP, Message
 
 
 class StatsdMon(StatsdMonitor):
-    """ """
+    ''' '''
     def __init__(
         self,
         host: str = 'localhost',
@@ -23,19 +18,21 @@ class StatsdMon(StatsdMonitor):
         super().__init__(host=host, port=port, prefix=f'{prefix}.faust', rate=rate, **kwargs)
 
     def _stream_label(self, stream: StreamT) -> str:
-        """
-        Enhance original _stream_label function
+        '''Enhance original _stream_label function
         it converts "topic_foo-bar.data" -> "foo-bar_data"
 
         :param stream: StreamT:
         :param stream: StreamT:
+        :param stream: StreamT:
+        :param stream: StreamT:
+        :param stream: StreamT: 
 
-        """
+        '''
         label = super()._stream_label(stream=stream)
         return label.replace('topic_', '').replace('.', '_')
 
     def on_message_in(self, tp: TP, offset: int, message: Message) -> None:
-        """Call before message is delegated to streams.
+        '''Call before message is delegated to streams.
 
         :param tp: TP:
         :param offset: int:
@@ -43,8 +40,17 @@ class StatsdMon(StatsdMonitor):
         :param tp: TP:
         :param offset: int:
         :param message: Message:
+        :param tp: TP:
+        :param offset: int:
+        :param message: Message:
+        :param tp: TP:
+        :param offset: int:
+        :param message: Message:
+        :param tp: TP: 
+        :param offset: int: 
+        :param message: Message: 
 
-        """
+        '''
         super(Monitor, self).on_message_in(tp, offset, message)
 
         topic = tp.topic.replace('.', '_')

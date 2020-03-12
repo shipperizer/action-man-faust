@@ -1,3 +1,3 @@
 class StoreException(Exception):
-    """ """
+    ''' '''
     pass

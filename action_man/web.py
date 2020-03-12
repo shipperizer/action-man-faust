@@ -1,10 +1,8 @@
-import asyncio
 import logging
 from os import environ
 
-import asyncpg
 from sanic import Sanic
-from sanic.response import json, stream, HTTPResponse
+from sanic.response import json, HTTPResponse
 from sanic.request import Request
 
 from action_man import cache
@@ -21,13 +19,13 @@ logger.setLevel(logging.INFO)
 
 
 def init_web() -> Sanic:
-    """ """
+    ''' '''
     app = Sanic('action_man')
 
     async def setup_kafka_producer(app: Sanic, loop):
         brokers = environ.get('KAFKA_CNX_STRING', 'kafka:9092')
         logger.warning(f'app.kafka initialization...{brokers}')
-        app.kafka = kafka.kafka_producer(brokers)
+        app.kafka = kafka.get_kafka_producer(brokers)
         logger.warning('app.kafka initialized')
 
     async def setup_db(app: Sanic, loop):
@@ -40,6 +38,10 @@ def init_web() -> Sanic:
         app.cache_pool = await cache.cache_pool()
         logger.warning('app.cache_pool initialized')
 
+    async def stop_cache(app: Sanic, loop):
+        app.cache_pool.close()
+        await app.cache_pool.wait_closed()
+
     async def server_error_handler(request: Request, exception: Exception) -> HTTPResponse:
         return json({'message': "Oops, server error", }, status=500)
 
@@ -48,6 +50,7 @@ def init_web() -> Sanic:
     app.register_listener(setup_cache, 'before_server_start')
     app.register_listener(setup_db, 'before_server_start')
     app.register_listener(setup_kafka_producer, 'before_server_start')
+    app.register_listener(stop_cache, 'after_server_stop')
 
     app.blueprint(actions_bp)
     app.blueprint(demo_bp)

@@ -26,17 +26,16 @@ async def test_calculate_probabilities(faust, db_conn, cache_pool):
         actions
     )
 
-
     with await cache_pool as conn:
         for action in actions:
             key = f'{experiment_id}_{action[2]}'
             await conn.set(f'{key}_total', 10)
             await conn.set(f'{key}_successes', 5)
 
-
     # act
     async with calculate_probabilities.test_context() as agent:
-        await agent.put(experiment_id)
+        with patch.object(agent.app, 'kafka_producer', return_value=AsyncMock(send_and_wait=AsyncMock())):
+            await agent.put(experiment_id)
 
     # assert
 
@@ -46,6 +45,7 @@ async def test_calculate_probabilities(faust, db_conn, cache_pool):
     probabilities = json.loads(probabilities)
 
     assert len(probabilities.values()) == 5
+
 
     for value in probabilities.values():
         assert 0 <= value <=1

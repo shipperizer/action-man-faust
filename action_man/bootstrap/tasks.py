@@ -1,10 +1,8 @@
 import logging
 
-from aioredlock import Aioredlock, LockError
-
 from action_man.entrypoint import kafka
 from action_man import cache
-from action_man import db
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

@@ -1,14 +1,12 @@
-import asyncio
-import base64
-import collections
+from asyncio import AbstractEventLoop
 import logging
 from os import environ
-import json
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from asyncpg.pool import Pool
+from aioredis import ConnectionsPool
+from aioredlock import Aioredlock
 import faust
-from faust.types import StreamT, TP, Message
 from kafka import KafkaProducer
 
 from action_man import cache
@@ -20,45 +18,42 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class KafkaSendException(Exception):
-    """ """
-    pass
-
-
 class KafkaConnectException(Exception):
-    """ """
     pass
 
 
 class KafkaWorker(faust.App):
-    """Wraction_maner class for combining features of faust and Kafka-Python. The broker
+    '''Wraction_maner class for combining features of faust and Kafka-Python. The broker
     argument can be passed as a string of the form 'kafka-1:9092,kafka-2:9092'
     and the construcor will format the string as required by faust.
 
 
-    """
+    '''
 
-    def __init__(self, *args: List, **kwargs: Dict) -> faust.App:
-        self.broker = kwargs['broker']
-        self.kafka_producer = self.get_kafka_producer()
-        self.topics_map = {}
+    def __init__(self, *args: List, **kwargs: Dict) -> None:
+        self.broker : str = kwargs.pop('broker')
+        self.topics_map : Dict[str, faust.agents.Agent] = {}
+
+        logging.warning('kafka.kafka_producer initialization...')
+        self._kafka_producer = get_kafka_producer(self.broker)
+        logging.warning('kafka.kafka_producer initialization...done ✓')
+
         self._db_pool = None
         self._cache_pool = None
         self._redis_lock_manager = None
-        kwargs['broker'] = ';'.join([f'kafka://{broker}' for broker in kwargs['broker'].split(',')])
 
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, broker=KafkaWorker._broker_faust_string(self.broker), **kwargs)
 
-    def get_kafka_producer(self) -> KafkaProducer:
-        """ """
-        return kafka_producer(self.broker)
+    @staticmethod
+    def _broker_faust_string(cnx_string: str) -> str:
+        return ';'.join([f'kafka://{broker}' for broker in cnx_string.split(',')])
 
     def get_topics_map(self) -> Dict:
-        """ """
+        ''' '''
         return {t.get_topic_name(): t for t in self.topics}
 
-    def refresh_topics_map(self):
-        """ """
+    def refresh_topics_map(self) -> None:
+        ''' '''
         self.topics_map = self.get_topics_map()
 
     async def db_pool(self) -> Pool:
@@ -70,7 +65,7 @@ class KafkaWorker(faust.App):
 
         return self._db_pool
 
-    async def cache_pool(self):
+    async def cache_pool(self) -> ConnectionsPool:
         """ """
         if not self._cache_pool:
             logging.warning('kafka.cache_pool initialization...')
@@ -79,7 +74,7 @@ class KafkaWorker(faust.App):
 
         return self._cache_pool
 
-    async def redis_lock_manager(self):
+    async def redis_lock_manager(self) -> Aioredlock:
         """ """
         if not self._redis_lock_manager:
             logging.warning('kafka.redis_lock_manager initialization...')
@@ -87,6 +82,10 @@ class KafkaWorker(faust.App):
             logging.warning('kafka.redis_lock_manager initialization...done ✓')
 
         return self._redis_lock_manager
+
+    def kafka_producer(self) -> KafkaProducer:
+        """ """
+        return self._kafka_producer
 
     async def on_stop(self) -> None:
         """ """
@@ -100,26 +99,25 @@ class KafkaWorker(faust.App):
         await super().on_stop()
 
 
-def kafka_producer(broker: str) -> KafkaProducer:
-    """
+def get_kafka_producer(broker: str) -> KafkaProducer:
+    '''
 
     :param broker: str:
-    :param broker: str:
 
-    """
+    '''
     try:
         return KafkaProducer(
             bootstrap_servers=broker,
-            connections_max_idle_ms=60000,
-            max_in_flight_requests_per_connection=25,
+            connections_max_idle_ms=10000,
             key_serializer=lambda x: x.encode() if x else None
         )
-    except Exception as ex:
-        raise KafkaConnectException(f'Exception while connecting to Kafka: {ex}')
+    except Exception as exc:
+        raise KafkaConnectException(f'Exception while connecting to Kafka: {exc}') from exc
+
 
 
 def init_kafka() -> KafkaWorker:
-    """Initializing kafka action_man"""
+    '''Initializing kafka action_man'''
     logging.debug('Kafka init')
     app = KafkaWorker(
         'action_man',

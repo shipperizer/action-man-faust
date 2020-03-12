@@ -1,20 +1,12 @@
-from datetime import timedelta
 import logging
-import json
 
-from aioredlock import LockError
 from faust.agents import current_agent
 from faust.types import StreamT
-import numpy
 
-from action_man.algorithm import ab
 from action_man.entrypoint import kafka
-from action_man.stores.actions import save_action
-from action_man.stores.exceptions import StoreException
 from action_man import cache
 from action_man import models
 from action_man import records
-from action_man.topics import actions_topic
 from action_man.probabilities.agents import calculate_probabilities
 
 
@@ -40,7 +32,7 @@ async def calculate_experiments():
 async def init_experiment(experiments: StreamT):
     """
 
-    :param experiments:
+    :param experiments: StreamT:
 
     """
     async for experiment in experiments:
